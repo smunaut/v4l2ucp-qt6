@@ -57,6 +57,7 @@ private:
     QAction *updateActions[6];
     QTimer timer;
     QProcess *previewProcess;
+    QString filename;
     
     MainWindow(QWidget *parent=0, const char *name=0);
     void add_control(struct v4l2_queryctrl &ctrl, int fd, QWidget *parent, QGridLayout *);

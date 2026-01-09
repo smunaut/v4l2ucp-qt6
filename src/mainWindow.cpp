@@ -35,6 +35,7 @@
 #include <QMenu>
 #include <QTimer>
 #include <QSettings>
+#include <QStandardPaths>
 
 #include "v4l2controls.h"
 #include "mainWindow.h"
@@ -97,7 +98,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name) :
 
 void MainWindow::fileOpen()
 {
-     QString newfilename = QFileDialog::getOpenFileName(this,
+    QFileDialog* diag = new QFileDialog(this,
         "Select V4L2 device",
         "/dev",
         "V4L2 Devices (video* vout* vbi* radio*);;"
@@ -105,12 +106,20 @@ void MainWindow::fileOpen()
         "Video Output (vout*);;"
         "VBI (vbi*);;"
         "Radio (radio*);;"
-        "All (*)");
-    if ( !newfilename.isEmpty() ) {
-        MainWindow *w = openFile(newfilename.toUtf8());
-        if(w)
-            w->show();
-    }
+        "All Files (*)");
+
+    diag->setFilter( QDir::AllEntries | QDir::System );
+
+    connect( diag, &QFileDialog::fileSelected, [diag](const QString& newfilename) {
+        diag->close();
+        if ( !newfilename.isEmpty() ) {
+            MainWindow *w = openFile(newfilename.toUtf8());
+            if(w)
+                w->show();
+        }
+    });
+
+    diag->show();
 }
 
 MainWindow *MainWindow::openFile(const char *fileName)
@@ -130,6 +139,7 @@ MainWindow *MainWindow::openFile(const char *fileName)
     }
     
     MainWindow *mw = new MainWindow();
+    mw->filename = QString( fileName );
     mw->fd = fd;
     QString str("v4l2ucp - ");
     str.append(fileName);
@@ -416,7 +426,15 @@ void MainWindow::startPreview()
                         this, SLOT(previewFinished(int, QProcess::ExitStatus)));
     }
 
-    QString appBinaryName = "mplayer";
+    QStringList possiblePlayers = { "mpv", "mplayer", "ffplay" };
+    QString appBinaryName = "mpv";
+    for ( const QString& players : possiblePlayers ) {
+        if ( !QStandardPaths::findExecutable( players ).isEmpty() ) {
+            appBinaryName = players;
+            break;
+        }
+    }
+
     QSettings settings(APP_ORG, APP_NAME);
     if (settings.contains(SETTINGS_APP_BINARY_NAME))
     {
@@ -436,7 +454,7 @@ void MainWindow::startPreview()
     }
     else
     {
-        env << "LD_PRELOAD=/usr/lib/libv4l/v4l2convert.so";
+        //env << "LD_PRELOAD=/usr/lib/libv4l/v4l2convert.so";
     }
 
     QStringList args;
@@ -461,7 +479,11 @@ void MainWindow::startPreview()
     }
     else
     {
-        args << "tv://";
+        if ( filename.isEmpty() ) {
+            args << "tv://";
+        } else {
+            args << filename;
+        }
     }
 
     previewProcess->setEnvironment(env);
