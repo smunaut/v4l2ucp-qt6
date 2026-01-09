@@ -45,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name) : QMainWindow(parent),
     setWindowTitle(name);
     setWindowIcon(QIcon(":/v4l2ucp.png"));
     QMenu *menu = new QMenu(this);
-    menu->addAction("&Open", Qt::CTRL | Qt::Key_O, [this] { this->fileOpen(); });
+    menu->addAction("&Open", Qt::CTRL | Qt::Key_O, &MainWindow::fileOpen);
     menu->addAction("&Close", Qt::CTRL | Qt::Key_W, [this] { this->close(); });
     menu->addSeparator();
     menu->addAction("E&xit", Qt::CTRL | Qt::Key_Q, [] { qApp->exit(); });
@@ -91,7 +91,7 @@ MainWindow::MainWindow(QWidget *parent, const char *name) : QMainWindow(parent),
 }
 
 void MainWindow::fileOpen() {
-    QFileDialog *diag = new QFileDialog(this, "Select V4L2 device", "/dev",
+    QFileDialog *diag = new QFileDialog(nullptr, "Select V4L2 device", "/dev",
                                         "V4L2 Devices (video* vout* vbi* radio*);;"
                                         "Video Capture (video*);;"
                                         "Video Output (vout*);;"
@@ -102,12 +102,12 @@ void MainWindow::fileOpen() {
     diag->setFilter(QDir::AllEntries | QDir::System);
 
     connect(diag, &QFileDialog::fileSelected, [diag](const QString &newfilename) {
-        diag->close();
         if (!newfilename.isEmpty()) {
             MainWindow *w = openFile(newfilename.toUtf8());
             if (w)
                 w->show();
         }
+        diag->close();
     });
 
     diag->show();

@@ -27,7 +27,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
   public slots:
-    void fileOpen();
+    static void fileOpen();
     void updateDisabled();
     void update1Sec();
     void update5Sec();

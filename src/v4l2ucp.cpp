@@ -69,6 +69,9 @@ int main(int argc, char **argv) {
             if (w) {
                 w->show();
                 windowOpened = true;
+            } else {
+                MainWindow::fileOpen();
+                windowOpened = true;
             }
         }
     }
@@ -76,6 +79,6 @@ int main(int argc, char **argv) {
     if (!windowOpened)
         exit(EXIT_FAILURE);
 
-    a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
+    a.connect(&a, &QGuiApplication::lastWindowClosed, &a, &QApplication::quit);
     return a.exec();
 }
