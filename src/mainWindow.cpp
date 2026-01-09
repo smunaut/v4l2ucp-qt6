@@ -48,10 +48,10 @@ MainWindow::MainWindow(QWidget *parent, const char *name) :
     setWindowTitle(name);
 	setWindowIcon(QIcon(":/v4l2ucp.png"));
     QMenu *menu = new QMenu(this);
-    menu->addAction("&Open", this, SLOT(fileOpen()), Qt::CTRL+Qt::Key_O);
-    menu->addAction("&Close", this, SLOT(close()), Qt::CTRL+Qt::Key_W);
+    menu->addAction("&Open", Qt::CTRL|Qt::Key_O, [this]{ this->fileOpen() ; });
+    menu->addAction("&Close", Qt::CTRL|Qt::Key_W, [this]{ this->close(); });
     menu->addSeparator();
-    menu->addAction("E&xit", qApp, SLOT(quit()), Qt::CTRL+Qt::Key_Q);
+    menu->addAction("E&xit", Qt::CTRL|Qt::Key_Q, []{ qApp->exit(); });
     menu->setTitle("&File");
     menuBar()->addMenu(menu);
     
@@ -62,15 +62,15 @@ MainWindow::MainWindow(QWidget *parent, const char *name) :
     menuBar()->addMenu(menu);
 
     menu = new QMenu(this);
-    updateActions[0] = menu->addAction("Disabled", this, SLOT(updateDisabled()));
+    updateActions[0] = menu->addAction("Disabled", this, &MainWindow::updateDisabled);
     menu->addSeparator();
-    updateActions[1] = menu->addAction("1 sec", this, SLOT(update1Sec()));
-    updateActions[2] = menu->addAction("5 sec", this, SLOT(update5Sec()));
-    updateActions[3] = menu->addAction("10 sec", this, SLOT(update10Sec()));
-    updateActions[4] = menu->addAction("20 sec", this, SLOT(update20Sec()));
-    updateActions[5] = menu->addAction("30 sec", this, SLOT(update30Sec()));
+    updateActions[1] = menu->addAction("1 sec", this, &MainWindow::update1Sec);
+    updateActions[2] = menu->addAction("5 sec", this, &MainWindow::update5Sec);
+    updateActions[3] = menu->addAction("10 sec", this, &MainWindow::update10Sec);
+    updateActions[4] = menu->addAction("20 sec", this, &MainWindow::update20Sec);
+    updateActions[5] = menu->addAction("30 sec", this, &MainWindow::update30Sec);
     menu->addSeparator();
-    menu->addAction("Update now", this, SLOT(timerShot()));
+    menu->addAction("Update now", this, &MainWindow::timerShot);
     menu->setTitle("&Update");
     menuBar()->addMenu(menu);
     for (int i = 0; i < 6; i++)
@@ -80,18 +80,18 @@ MainWindow::MainWindow(QWidget *parent, const char *name) :
     updateActions[0]->setChecked(true);
 
     menu = new QMenu(this);
-    menu->addAction("Configure preview...", this, SLOT(configurePreview()));
-    menu->addAction("Start preview", this, SLOT(startPreview()));
+    menu->addAction("Configure preview...", this, &MainWindow::configurePreview);
+    menu->addAction("Start preview", this, &MainWindow::startPreview);
     menu->setTitle("Preview");
     menuBar()->addMenu(menu);
 
     menu = new QMenu(this);
-    menu->addAction("&About", this, SLOT(about()));
-    menu->addAction("About &Qt", this, SLOT(aboutQt()));
+    menu->addAction("&About", this, &MainWindow::about);
+    menu->addAction("About &Qt", this, &MainWindow::aboutQt);
     menu->setTitle("&Help");
     menuBar()->addMenu(menu);
 
-    QObject::connect(&timer, SIGNAL(timeout()), this, SLOT(timerShot()) );
+    QObject::connect(&timer, &QTimer::timeout, this, &MainWindow::timerShot );
 
 }
 
@@ -117,17 +117,15 @@ MainWindow *MainWindow::openFile(const char *fileName)
 {
     int fd = v4l2_open(fileName, O_RDWR, 0);
     if(fd < 0) {
-        QString msg;
-	msg.sprintf("Unable to open file %s\n%s", fileName, strerror(errno));
-	QMessageBox::warning(NULL, "v4l2ucp: Unable to open file", msg, "OK");
+        QString msg = QString("Unable to open file %1\n%2").arg(fileName, strerror(errno));
+        QMessageBox::warning(NULL, "v4l2ucp: Unable to open file", msg);
         return NULL;
     }
     
     struct v4l2_capability cap;
     if(v4l2_ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
-        QString msg;
-	msg.sprintf("%s is not a V4L2 device", fileName);
-	QMessageBox::warning(NULL, "v4l2ucp: Not a V4L2 device", msg, "OK");
+        QString msg = QString("%1 is not a V4L2 device").arg(fileName);
+        QMessageBox::warning(NULL, "v4l2ucp: Not a V4L2 device", msg);
         return NULL;
     }
     
@@ -173,22 +171,18 @@ MainWindow *MainWindow::openFile(const char *fileName)
     l = new QLabel(grid);
     gridLayout->addWidget(l);
     
-
-    str.sprintf("%d.%d.%d", cap.version>>16, (cap.version>>8)&0xff,
-                cap.version&0xff);
     l = new QLabel("version", grid);
     gridLayout->addWidget(l);
-    l = new QLabel(str, grid);
+    l = new QLabel(QString("%1.%2.%3").arg(cap.version>>16).arg((cap.version>>8)&0xff).arg(cap.version&0xff), grid);
     gridLayout->addWidget(l);
     l = new QLabel(grid);
     gridLayout->addWidget(l);
     l = new QLabel(grid);
     gridLayout->addWidget(l);
     
-    str.sprintf("0x%08x", cap.capabilities);
     l = new QLabel("capabilities", grid);
     gridLayout->addWidget(l);
-    l = new QLabel(str, grid);
+    l = new QLabel(QString("0x%1").arg(QString::number(cap.capabilities, 16)), grid);
     gridLayout->addWidget(l);
     l = new QLabel(grid);
     gridLayout->addWidget(l);
@@ -201,31 +195,31 @@ MainWindow *MainWindow::openFile(const char *fileName)
     /* Try the extended control API first */
     ctrl.id = V4L2_CTRL_FLAG_NEXT_CTRL;
     if(0 == v4l2_ioctl (fd, VIDIOC_QUERYCTRL, &ctrl)) {
-	do {
-		mw->add_control(ctrl, fd, grid, gridLayout);
-		ctrl.id |= V4L2_CTRL_FLAG_NEXT_CTRL;
-	} while(0 == v4l2_ioctl (fd, VIDIOC_QUERYCTRL, &ctrl));
+        do {
+            mw->add_control(ctrl, fd, grid, gridLayout);
+            ctrl.id |= V4L2_CTRL_FLAG_NEXT_CTRL;
+        } while(0 == v4l2_ioctl (fd, VIDIOC_QUERYCTRL, &ctrl));
     } else
 #endif
     {
-	/* Fall back on the standard API */
-	/* Check all the standard controls */
-	for(int i=V4L2_CID_BASE; i<V4L2_CID_LASTP1; i++) {
+        /* Fall back on the standard API */
+        /* Check all the standard controls */
+        for(int i=V4L2_CID_BASE; i<V4L2_CID_LASTP1; i++) {
             ctrl.id = i;
             if(v4l2_ioctl(fd, VIDIOC_QUERYCTRL, &ctrl) == 0) {
-        	mw->add_control(ctrl, fd, grid, gridLayout);
+                mw->add_control(ctrl, fd, grid, gridLayout);
             }
-	}
+        }
 
-	/* Check any custom controls */
-	for(int i=V4L2_CID_PRIVATE_BASE; ; i++) {
+    /* Check any custom controls */
+        for(int i=V4L2_CID_PRIVATE_BASE; ; i++) {
             ctrl.id = i;
             if(v4l2_ioctl(fd, VIDIOC_QUERYCTRL, &ctrl) == 0) {
-        	mw->add_control(ctrl, fd, grid, gridLayout);
+                mw->add_control(ctrl, fd, grid, gridLayout);
             } else {
-        	break;
+                break;
             }
-	}
+        }
     }
     
     mw->setCentralWidget(sa);
@@ -262,18 +256,20 @@ void MainWindow::add_control(struct v4l2_queryctrl &ctrl, int fd, QWidget *paren
         case V4L2_CTRL_TYPE_BUTTON:
             w = new V4L2ButtonControl(fd, ctrl, parent, this);
             break;
-        case V4L2_CTRL_TYPE_INTEGER64:
         case V4L2_CTRL_TYPE_CTRL_CLASS:
+            layout->addWidget(new QLabel(parent));
+            layout->addWidget(new QLabel(parent));
+            layout->addWidget(new QLabel(parent));
+            l->setTextFormat( Qt::RichText );
+            l->setText(QString("<b>%1</b>").arg((const char *)ctrl.name));
+            return;
+        case V4L2_CTRL_TYPE_INTEGER64:
         default:
             break;
     }
     
     if(!w) {
-        if (ctrl.type == V4L2_CTRL_TYPE_CTRL_CLASS)
-            layout->addWidget(new QLabel(parent));
-        else
-            layout->addWidget(new QLabel("Unknown control", parent));
-
+        layout->addWidget(new QLabel("Unknown control", parent));
         layout->addWidget(new QLabel(parent));
         layout->addWidget(new QLabel(parent));
         return;
@@ -303,8 +299,8 @@ void MainWindow::add_control(struct v4l2_queryctrl &ctrl, int fd, QWidget *paren
 
 void MainWindow::about()
 {
-    QMessageBox::about(this, "About", "v4l2ucp Version "V4L2UCP_VERSION"\n\n"
-        "This application is a port of an original v4l2ucp to Qt4 library,\n"
+    QMessageBox::about(this, "About", "v4l2ucp Version " V4L2UCP_VERSION "\n\n"
+        "This application is a port of an original v4l2ucp to Qt6 library,\n"
         "v4l2ucp is a universal control panel for all V4L2 devices. The\n"
         "controls come directly from the driver. If they cause problems\n"
         "with your hardware, please contact the maintainer of the driver.\n\n"
@@ -407,7 +403,7 @@ void MainWindow::startPreview()
 {
     if (previewProcess && previewProcess->state() != QProcess::NotRunning)
     {
-        QMessageBox::warning(NULL, "v4l2ucp: warning", "Preview process is already started", "OK");
+        QMessageBox::warning(NULL, "v4l2ucp: warning", "Preview process is already started");
         return;
     }
 
@@ -487,10 +483,10 @@ void MainWindow::previewProcError(QProcess::ProcessError er)
     switch (er)
     {
         case QProcess::FailedToStart:
-            QMessageBox::critical(NULL, "v4l2ucp", "Failed to start preview process!", "OK");
+            QMessageBox::critical(NULL, "v4l2ucp", "Failed to start preview process!");
             break;
         case QProcess::Crashed:
-            QMessageBox::critical(NULL, "v4l2ucp", "Preview process crashed!", "OK");
+            QMessageBox::critical(NULL, "v4l2ucp", "Preview process crashed!");
             break;
         default:
             break;
@@ -506,7 +502,7 @@ void MainWindow::previewFinished(int exitCode, QProcess::ExitStatus status)
         case QProcess::NormalExit:
             if (exitCode != 0)
             {
-                QMessageBox::critical(NULL, "v4l2ucp", "Preview process exited with code != 0", "OK");
+                QMessageBox::critical(NULL, "v4l2ucp", "Preview process exited with code != 0");
             }
             break;
         default:

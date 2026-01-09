@@ -128,9 +128,8 @@ void V4L2Control::updateHardware()
     c.id = cid;
     c.value = getValue();
     if(v4l2_ioctl(fd, VIDIOC_S_CTRL, &c) == -1) {
-        QString msg;
-	msg.sprintf("Unable to set %s\n%s", name, strerror(errno));
-	QMessageBox::warning(this, "Unable to set control", msg, "OK");
+        QString msg = QString("Unable to set %1\n%2").arg(name, strerror(errno));
+	QMessageBox::warning(this, "Unable to set control", msg);
 	updateStatus(false);
     } else
         updateStatus(true);
@@ -141,10 +140,8 @@ void V4L2Control::updateStatus(bool hwChanged)
     struct v4l2_queryctrl ctrl = { 0 };
     ctrl.id = cid;
     if(v4l2_ioctl(fd, VIDIOC_QUERYCTRL, &ctrl) == -1) {
-        QString msg;
-	msg.sprintf("Unable to get the status of %s\n%s", name,
-	            strerror(errno));
-	QMessageBox::warning(this, "Unable to get control status", msg, "OK");
+        QString msg = QString("Unable to get status of %1\n%2").arg(name, strerror(errno));
+        QMessageBox::warning(this, "Unable to get control status", msg);
     } else {
         queryCleanup(&ctrl);
         setEnabled(!(ctrl.flags & (V4L2_CTRL_FLAG_GRABBED|V4L2_CTRL_FLAG_READ_ONLY|V4L2_CTRL_FLAG_INACTIVE)));
@@ -164,10 +161,8 @@ void V4L2Control::updateStatus(bool hwChanged)
     struct v4l2_control c;
     c.id = cid;
     if(v4l2_ioctl(fd, VIDIOC_G_CTRL, &c) == -1) {
-        QString msg;
-	msg.sprintf("Unable to get %s\n%s", name,
-	            strerror(errno));
-	QMessageBox::warning(this, "Unable to get control", msg, "OK");
+        QString msg = QString("Unable to get %1\n%2").arg(name, strerror(errno));
+        QMessageBox::warning(this, "Unable to get control", msg);
     } else {
         cacheValue(c);
         if(c.value != getValue())
@@ -304,10 +299,9 @@ V4L2MenuControl::V4L2MenuControl
         if(v4l2_ioctl(fd, VIDIOC_QUERYMENU, &qm) == 0) {
             cb->insertItem(i, (const char *)qm.name);
         } else {
-            QString msg;
-            msg.sprintf("Unable to get menu item for %s, index=%d\n"
-	                "Will use Unknown", name, qm.index);
-            QMessageBox::warning(this, "Unable to get menu item", msg, "OK");
+            QString msg = QString("Unable to get menu item for %1, index=%2\n"
+	                "Will use Unknown").arg(name).arg(qm.index);
+            QMessageBox::warning(this, "Unable to get menu item", msg);
             cb->insertItem(i, "Unknown");
         }
     }

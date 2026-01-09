@@ -10,7 +10,7 @@ set(CMAKE_AUTOUIC ON)
 include_directories(${CMAKE_BINARY_DIR}/src)
 
 add_executable(v4l2ucp ${SOURCES} ${MOC_SOURCES} ${UI_HEADERS} ${RC_SOURCES})
-target_link_libraries(v4l2ucp Qt5::Widgets ${V4L2_LIBRARY})
+target_link_libraries(v4l2ucp Qt6::Core Qt6::Widgets ${V4L2_LIBRARY})
 
 add_executable(v4l2ctrl v4l2ctrl.c)
 target_link_libraries(v4l2ctrl ${V4L2_LIBRARY})
