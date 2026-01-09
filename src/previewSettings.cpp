@@ -73,14 +73,12 @@ void PreviewSettingsDialog::loadSettings()
         for (begin = envList.begin(),
             end = envList.end(); begin != end; begin++)
         {
-            QListWidgetItem *item;
-            item = new QListWidgetItem((*begin).toString(), ui.envList);
+            new QListWidgetItem((*begin).toString(), ui.envList);
         }
     }
     else
     {
-        QListWidgetItem *item;
-        item = new QListWidgetItem("LD_PRELOAD=/usr/lib/libv4l/v4l2convert.so", ui.envList);
+        new QListWidgetItem("LD_PRELOAD=/usr/lib/libv4l/v4l2convert.so", ui.envList);
     }
 
     if (settings.contains(SETTINGS_ARG_LIST))
@@ -90,14 +88,12 @@ void PreviewSettingsDialog::loadSettings()
         for (begin = argList.begin(),
             end = argList.end(); begin != end; begin++)
         {
-            QListWidgetItem *item;
-            item = new QListWidgetItem((*begin).toString(), ui.argList);
+            new QListWidgetItem((*begin).toString(), ui.argList);
         }
     }
     else
     {
-        QListWidgetItem *item;
-        item = new QListWidgetItem("tv://", ui.argList);
+        new QListWidgetItem("tv://", ui.argList);
     }
 }
 
@@ -150,13 +146,12 @@ void PreviewSettingsDialog::addEnvItemClicked()
 {
     if (!ui.envEdit->text().isEmpty())
     {
-        QListWidgetItem *item = NULL;
-        item = new QListWidgetItem(ui.envEdit->text(), ui.envList);
+        new QListWidgetItem(ui.envEdit->text(), ui.envList);
         ui.envEdit->clear();
     }
     else
     {
-        QMessageBox::warning(NULL, "v4l2ucp", "Empty values seems to be meaningless!", "OK");
+        QMessageBox::warning(NULL, "v4l2ucp", "Empty values seems to be meaningless!");
     }
 }
 
@@ -164,13 +159,12 @@ void PreviewSettingsDialog::addArgItemClicked()
 {
     if (!ui.argEdit->text().isEmpty())
     {
-        QListWidgetItem *item = NULL;
-        item = new QListWidgetItem(ui.argEdit->text(), ui.argList);
+        QListWidgetItem *item = new QListWidgetItem(ui.argEdit->text(), ui.argList);
         ui.argEdit->clear();
     }
     else
     {
-        QMessageBox::warning(NULL, "v4l2ucp", "Empty values seems to be meaningless!", "OK");
+        QMessageBox::warning(NULL, "v4l2ucp", "Empty values seems to be meaningless!");
     }
 }
 void PreviewSettingsDialog::listCurItemChanged(QListWidgetItem *newItem, QListWidgetItem *oldItem)
@@ -189,7 +183,7 @@ void PreviewSettingsDialog::delEnvItemClicked()
     }
     else
     {
-        QMessageBox::warning(NULL, "v4l2ucp", "Select entry to delete.", "OK");
+        QMessageBox::warning(NULL, "v4l2ucp", "Select entry to delete.");
     }
 }
 
@@ -201,20 +195,18 @@ void PreviewSettingsDialog::delArgItemClicked()
     }
     else
     {
-        QMessageBox::warning(NULL, "v4l2ucp", "Select entry to delete.", "OK");
+        QMessageBox::warning(NULL, "v4l2ucp", "Select entry to delete.");
     }
 }
 
 void PreviewSettingsDialog::defaultsClicked()
 {
-    QListWidgetItem *item;
-
     ui.argList->clear();
     ui.envList->clear();
     ui.argEdit->clear();
     ui.envEdit->clear();
     ui.appNameEdit->setText("mplayer");
 
-    item = new QListWidgetItem("LD_PRELOAD=/usr/lib/libv4l/v4l2convert.so", ui.envList);
-    item = new QListWidgetItem("tv://", ui.argList);
+    new QListWidgetItem("LD_PRELOAD=/usr/lib/libv4l/v4l2convert.so", ui.envList);
+    new QListWidgetItem("tv://", ui.argList);
 }
