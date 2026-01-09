@@ -17,36 +17,35 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
  */
-#include <sys/time.h>
-#include <linux/types.h>          /* for videodev2.h */
+#include <linux/types.h> /* for videodev2.h */
 #include <linux/videodev2.h>
+#include <sys/time.h>
 
 #ifndef V4L2_CID_IRIS_ABSOLUTE
-#define V4L2_CID_IRIS_ABSOLUTE			(V4L2_CID_CAMERA_CLASS_BASE+17)
-#define V4L2_CID_IRIS_RELATIVE			(V4L2_CID_CAMERA_CLASS_BASE+18)
+#define V4L2_CID_IRIS_ABSOLUTE (V4L2_CID_CAMERA_CLASS_BASE + 17)
+#define V4L2_CID_IRIS_RELATIVE (V4L2_CID_CAMERA_CLASS_BASE + 18)
 #endif
 
-#include <QHBoxLayout>
 #include <QCheckBox>
-#include <QSlider>
 #include <QComboBox>
+#include <QHBoxLayout>
 #include <QLineEdit>
+#include <QSlider>
 
 class MainWindow;
 
-class V4L2Control : public QWidget
-{
+class V4L2Control : public QWidget {
     Q_OBJECT
-public slots:
+  public slots:
     void updateHardware();
-    virtual void updateStatus(bool hwChanged=false);
+    virtual void updateStatus(bool hwChanged = false);
     virtual void resetToDefault();
     virtual void setValue(int val) = 0;
 
-public:
+  public:
     virtual int getValue() = 0;
 
-protected:
+  protected:
     V4L2Control(int fd, const struct v4l2_queryctrl &ctrl, QWidget *parent, MainWindow *mw);
     int fd;
     int cid;
@@ -54,7 +53,7 @@ protected:
     char name[32];
     QHBoxLayout layout;
 
-private:
+  private:
     MainWindow *mw;
 
     /* Not pretty we use these to keep track of the value of some special
@@ -70,23 +69,22 @@ private:
     void queryCleanup(struct v4l2_queryctrl *ctrl);
 };
 
-class V4L2IntegerControl : public V4L2Control
-{
+class V4L2IntegerControl : public V4L2Control {
     Q_OBJECT
-public:
+  public:
     V4L2IntegerControl(int fd, const struct v4l2_queryctrl &ctrl, QWidget *parent, MainWindow *mw);
 
-public slots:
+  public slots:
     void setValue(int val);
 
-public:
+  public:
     int getValue();
 
-private slots:
+  private slots:
     void SetValueFromSlider(void);
     void SetValueFromText(void);
 
-private:
+  private:
     int minimum;
     int maximum;
     int step;
@@ -94,51 +92,48 @@ private:
     QLineEdit *le;
 };
 
-class V4L2BooleanControl : public V4L2Control
-{
+class V4L2BooleanControl : public V4L2Control {
     Q_OBJECT
-public:
+  public:
     V4L2BooleanControl(int fd, const struct v4l2_queryctrl &ctrl, QWidget *parent, MainWindow *mw);
 
-public slots:
+  public slots:
     void setValue(int val);
 
-public:
+  public:
     int getValue();
 
-private:
+  private:
     QCheckBox *cb;
 };
 
-class V4L2MenuControl : public V4L2Control
-{
+class V4L2MenuControl : public V4L2Control {
     Q_OBJECT
-public:
+  public:
     V4L2MenuControl(int fd, const struct v4l2_queryctrl &ctrl, QWidget *parent, MainWindow *mw);
 
-public slots:
+  public slots:
     void setValue(int val);
 
-public:
+  public:
     int getValue();
 
-private:
+  private:
     QComboBox *cb;
 
-private slots:
+  private slots:
     void menuActivated(int val);
 };
 
-class V4L2ButtonControl : public V4L2Control
-{
+class V4L2ButtonControl : public V4L2Control {
     Q_OBJECT
-public slots:
+  public slots:
     void resetToDefault();
 
-public:
+  public:
     V4L2ButtonControl(int fd, const struct v4l2_queryctrl &ctrl, QWidget *parent, MainWindow *mw);
 
-public slots:
+  public slots:
     void setValue(int) {};
     int getValue() { return 0; };
 };

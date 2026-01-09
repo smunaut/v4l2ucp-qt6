@@ -25,8 +25,7 @@
 
 #include "mainWindow.h"
 
-void usage(const char *argv0)
-{
+void usage(const char *argv0) {
     using std::cout;
     using std::endl;
 
@@ -40,44 +39,43 @@ void usage(const char *argv0)
     cout << "Also accepts standard Qt arguments." << endl;
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     MainWindow *w;
     QApplication a(argc, argv);
     bool windowOpened = false;
-    
-    for(int i=1; i<argc; i++) {
-        if(!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
             usage(argv[0]);
             exit(EXIT_SUCCESS);
         }
         w = MainWindow::openFile(argv[i]);
-        if(w) {
+        if (w) {
             w->show();
             windowOpened = true;
         }
     }
-    
-    if(argc == 1) {
+
+    if (argc == 1) {
         const char *fname = getenv("V4L2UCP_DEV");
-        if(fname) {
+        if (fname) {
             w = MainWindow::openFile(fname);
-            if(w) {
+            if (w) {
                 w->show();
                 windowOpened = true;
             }
         } else {
             w = MainWindow::openFile("/dev/video0");
-            if(w) {
+            if (w) {
                 w->show();
                 windowOpened = true;
             }
         }
     }
-    
-    if(!windowOpened)
+
+    if (!windowOpened)
         exit(EXIT_FAILURE);
-    
-    a.connect( &a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()) );
+
+    a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
     return a.exec();
 }

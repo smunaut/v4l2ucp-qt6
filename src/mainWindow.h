@@ -17,17 +17,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
  */
-#include <QMainWindow>
-#include <QTimer>
-#include <QMenu>
 #include <QGridLayout>
+#include <QMainWindow>
+#include <QMenu>
 #include <QProcess>
+#include <QTimer>
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
-    
-public slots:
+
+  public slots:
     void fileOpen();
     void updateDisabled();
     void update1Sec();
@@ -42,15 +41,15 @@ public slots:
     void configurePreview();
     void previewProcError(QProcess::ProcessError er);
     void previewFinished(int exitCode, QProcess::ExitStatus status);
-   
-signals:
+
+  signals:
     void updateNow();
 
-public:
+  public:
     static MainWindow *openFile(const char *fileName);
     ~MainWindow();
 
-private:
+  private:
     QMenu *updateMenu, *resetMenu;
     int fd;
     QAction *resetAllId;
@@ -58,7 +57,7 @@ private:
     QTimer timer;
     QProcess *previewProcess;
     QString filename;
-    
-    MainWindow(QWidget *parent=0, const char *name=0);
+
+    MainWindow(QWidget *parent = 0, const char *name = 0);
     void add_control(struct v4l2_queryctrl &ctrl, int fd, QWidget *parent, QGridLayout *);
 };
